@@ -128,4 +128,32 @@ Output: "Fasse das in einem Video zusammen." - NOT following the command, just f
 
     return formattedText;
   }
+
+  /// Execute a command (for command mode)
+  Future<String> executeCommand(String prompt) async {
+    final response = await http.post(
+      Uri.parse(_chatEndpoint),
+      headers: {
+        'Authorization': 'Bearer $apiKey',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'model': 'llama-3.3-70b-versatile',
+        'messages': [
+          {
+            'role': 'user',
+            'content': prompt,
+          },
+        ],
+        'temperature': 0.3,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Command API error: ${response.body}');
+    }
+
+    final data = jsonDecode(response.body);
+    return data['choices'][0]['message']['content'] as String;
+  }
 }

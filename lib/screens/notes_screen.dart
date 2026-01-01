@@ -8,6 +8,8 @@ import '../models/note.dart';
 import '../services/audio_service.dart';
 import '../services/groq_api_service.dart';
 import '../services/storage_service.dart';
+import '../services/auto_paste_service.dart';
+import '../services/command_mode_service.dart';
 import 'note_detail_screen.dart';
 
 enum RecordingState { idle, recording, processing }
@@ -92,6 +94,34 @@ class _NotesScreenState extends State<NotesScreen> {
       formattedText = await provider.applyCorrections(formattedText);
       formattedText = await provider.applyFillerFilter(formattedText, language);
 
+      // Check for command mode (if enabled)
+      final commandModeEnabled = await _storageService.getCommandModeEnabled();
+      if (commandModeEnabled) {
+        final commandService = CommandModeService.instance;
+        final parsed = commandService.parseCommand(formattedText);
+
+        if (parsed.command != CommandType.none) {
+          // Execute the command
+          formattedText = await commandService.processCommand(
+            text: parsed.cleanedText,
+            command: parsed.command,
+            apiKey: apiKey,
+            targetLanguage: language == 'de' ? 'English' : 'German',
+          );
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                    'Command executed: ${commandService.getCommandName(parsed.command)}'),
+                backgroundColor: Colors.blue,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+        }
+      }
+
       final now = DateTime.now();
       final note = Note(
         content: formattedText,
@@ -107,13 +137,26 @@ class _NotesScreenState extends State<NotesScreen> {
         _recordingState = RecordingState.idle;
       });
 
-      await FlutterClipboard.copy(formattedText);
+      // Auto-paste into active window (if enabled)
+      final autoPasteEnabled = await _storageService.getAutoPasteEnabled();
+      bool autoPasted = false;
+
+      if (autoPasteEnabled) {
+        autoPasted =
+            await AutoPasteService.instance.copyAndPaste(formattedText);
+      } else {
+        // Just copy to clipboard
+        await FlutterClipboard.copy(formattedText);
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Note saved and copied to clipboard!'),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text(autoPasted
+                ? 'Note saved and pasted!'
+                : 'Note saved and copied to clipboard!'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
           ),
         );
       }

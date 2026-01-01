@@ -5,6 +5,8 @@ class StorageService {
   static const String _languageKey = 'language';
   static const String _hotkeysEnabledKey = 'hotkeys_enabled';
   static const String _fillerFilterEnabledKey = 'filler_filter_enabled';
+  static const String _autoPasteEnabledKey = 'auto_paste_enabled';
+  static const String _commandModeEnabledKey = 'command_mode_enabled';
 
   Future<void> saveApiKey(String apiKey) async {
     final prefs = await SharedPreferences.getInstance();
@@ -49,5 +51,25 @@ class StorageService {
   Future<bool> getFillerFilterEnabled() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_fillerFilterEnabledKey) ?? true;
+  }
+
+  Future<void> setAutoPasteEnabled(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_autoPasteEnabledKey, enabled);
+  }
+
+  Future<bool> getAutoPasteEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_autoPasteEnabledKey) ?? true;
+  }
+
+  Future<void> setCommandModeEnabled(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_commandModeEnabledKey, enabled);
+  }
+
+  Future<bool> getCommandModeEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_commandModeEnabledKey) ?? true;
   }
 }

@@ -64,6 +64,9 @@ dependencies:
   # Window management
   window_manager: ^0.3.7
 
+  # Keyboard simulation for auto-paste (Windows)
+  win32: ^5.5.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

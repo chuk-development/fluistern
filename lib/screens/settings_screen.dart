@@ -17,6 +17,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _obscureApiKey = true;
   bool _hotkeysEnabled = true;
   bool _fillerFilterEnabled = true;
+  bool _autoPasteEnabled = true;
+  bool _commandModeEnabled = true;
 
   final List<Map<String, String>> _languages = [
     {'code': 'de', 'name': 'Deutsch'},
@@ -38,6 +40,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final language = await _storageService.getLanguage();
     final hotkeysEnabled = await _storageService.getHotkeysEnabled();
     final fillerFilterEnabled = await _storageService.getFillerFilterEnabled();
+    final autoPasteEnabled = await _storageService.getAutoPasteEnabled();
+    final commandModeEnabled = await _storageService.getCommandModeEnabled();
 
     setState(() {
       if (apiKey != null) {
@@ -46,6 +50,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _selectedLanguage = language;
       _hotkeysEnabled = hotkeysEnabled;
       _fillerFilterEnabled = fillerFilterEnabled;
+      _autoPasteEnabled = autoPasteEnabled;
+      _commandModeEnabled = commandModeEnabled;
       _isLoading = false;
     });
   }
@@ -55,6 +61,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await _storageService.saveLanguage(_selectedLanguage);
     await _storageService.setHotkeysEnabled(_hotkeysEnabled);
     await _storageService.setFillerFilterEnabled(_fillerFilterEnabled);
+    await _storageService.setAutoPasteEnabled(_autoPasteEnabled);
+    await _storageService.setCommandModeEnabled(_commandModeEnabled);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -176,20 +184,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(height: 32),
 
-                  // Filler Word Filtering
+                  // Advanced Features
                   Text(
-                    'Filler Word Filtering',
+                    'Advanced Features',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Automatically remove filler words like "vielen Dank", "äh", etc.',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
                   const SizedBox(height: 16),
+
+                  // Auto-Paste
                   SwitchListTile(
-                    title: const Text('Enable Filler Filtering'),
-                    subtitle: const Text('Remove common filler words from transcriptions'),
+                    title: const Text('Auto-Paste'),
+                    subtitle: const Text(
+                        'Automatically paste transcription into active window (Windows only)'),
+                    value: _autoPasteEnabled,
+                    onChanged: (value) {
+                      setState(() {
+                        _autoPasteEnabled = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Command Mode
+                  SwitchListTile(
+                    title: const Text('Command Mode'),
+                    subtitle: const Text(
+                        'Use voice commands like "summarize", "translate", "delete last sentence"'),
+                    value: _commandModeEnabled,
+                    onChanged: (value) {
+                      setState(() {
+                        _commandModeEnabled = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Filler Filtering
+                  SwitchListTile(
+                    title: const Text('Filler Word Filtering'),
+                    subtitle: const Text(
+                        'Remove common filler words like "vielen Dank", "äh", etc.'),
                     value: _fillerFilterEnabled,
                     onChanged: (value) {
                       setState(() {
