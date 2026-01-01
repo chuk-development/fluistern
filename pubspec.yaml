@@ -44,9 +44,6 @@ dependencies:
   # File paths
   path_provider: ^2.1.1
 
-  # Microphone permissions
-  permission_handler: ^11.1.0
-
   # Clipboard support
   clipboard: ^0.1.3
 

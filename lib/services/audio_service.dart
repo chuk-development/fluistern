@@ -1,29 +1,33 @@
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 
 class AudioService {
   final AudioRecorder _recorder = AudioRecorder();
   String? _currentRecordingPath;
 
-  /// Request microphone permission
-  Future<bool> requestPermission() async {
-    final status = await Permission.microphone.request();
-    return status.isGranted;
-  }
-
   /// Check if microphone permission is granted
+  /// On Linux, we assume permission is granted and handle errors during recording
   Future<bool> hasPermission() async {
-    final status = await Permission.microphone.status;
-    return status.isGranted;
+    if (Platform.isLinux || Platform.isMacOS || Platform.isWindows) {
+      // Desktop platforms don't use runtime permissions
+      return true;
+    }
+
+    // For mobile platforms, check if we can access the recorder
+    try {
+      return await _recorder.hasPermission();
+    } catch (e) {
+      return false;
+    }
   }
 
   /// Start recording
   Future<void> startRecording() async {
-    if (!await hasPermission()) {
-      final granted = await requestPermission();
-      if (!granted) {
+    // On mobile, check permissions first
+    if (Platform.isAndroid || Platform.isIOS) {
+      final hasPermission = await _recorder.hasPermission();
+      if (!hasPermission) {
         throw Exception('Microphone permission denied');
       }
     }
