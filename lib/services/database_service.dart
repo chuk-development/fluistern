@@ -46,7 +46,8 @@ class DatabaseService {
         created_at INTEGER NOT NULL,
         updated_at INTEGER NOT NULL,
         language TEXT,
-        is_favorite INTEGER DEFAULT 0
+        is_favorite INTEGER DEFAULT 0,
+        is_pinned INTEGER DEFAULT 0
       )
     ''');
 
@@ -91,7 +92,7 @@ class DatabaseService {
       'notes',
       where: where.isEmpty ? null : where,
       whereArgs: whereArgs.isEmpty ? null : whereArgs,
-      orderBy: 'created_at DESC',
+      orderBy: 'is_pinned DESC, created_at DESC',
       limit: limit,
     );
 
@@ -135,6 +136,16 @@ class DatabaseService {
     return await db.update(
       'notes',
       {'is_favorite': isFavorite ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> togglePin(int id, bool isPinned) async {
+    final db = await database;
+    return await db.update(
+      'notes',
+      {'is_pinned': isPinned ? 1 : 0},
       where: 'id = ?',
       whereArgs: [id],
     );

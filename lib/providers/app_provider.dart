@@ -5,9 +5,13 @@ import 'package:hotkey_manager/hotkey_manager.dart';
 import '../models/note.dart';
 import '../models/correction.dart';
 import '../services/database_service.dart';
+import '../services/storage_service.dart';
+import '../services/filler_filter_service.dart';
 
 class AppProvider extends ChangeNotifier {
   final DatabaseService _db = DatabaseService.instance;
+  final StorageService _storage = StorageService();
+  final FillerFilterService _fillerFilter = FillerFilterService.instance;
 
   List<Note> _notes = [];
   List<Correction> _corrections = [];
@@ -59,9 +63,21 @@ class AppProvider extends ChangeNotifier {
     await loadNotes();
   }
 
+  Future<void> togglePin(int id, bool isPinned) async {
+    await _db.togglePin(id, isPinned);
+    await loadNotes();
+  }
+
   void setSearchQuery(String query) {
     _searchQuery = query;
     loadNotes(query: query);
+  }
+
+  // Filler filtering
+  Future<String> applyFillerFilter(String text, String language) async {
+    final isEnabled = await _storage.getFillerFilterEnabled();
+    if (!isEnabled) return text;
+    return _fillerFilter.filterFillers(text, language: language);
   }
 
   // Corrections methods
@@ -86,6 +102,13 @@ class AppProvider extends ChangeNotifier {
 
   // Hotkey methods
   Future<void> _initializeHotKey() async {
+    // Check if hotkeys are enabled in settings
+    final hotkeysEnabled = await _storage.getHotkeysEnabled();
+    if (!hotkeysEnabled) {
+      debugPrint('Hotkeys disabled in settings');
+      return;
+    }
+
     // Only initialize on desktop platforms
     if (!Platform.isWindows && !Platform.isMacOS && !Platform.isLinux) {
       return;

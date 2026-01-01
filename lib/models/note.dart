@@ -7,6 +7,7 @@ class Note {
   final DateTime updatedAt;
   final String? language;
   final bool isFavorite;
+  final bool isPinned;
 
   Note({
     this.id,
@@ -17,6 +18,7 @@ class Note {
     required this.updatedAt,
     this.language,
     this.isFavorite = false,
+    this.isPinned = false,
   });
 
   Map<String, dynamic> toMap() {
@@ -29,6 +31,7 @@ class Note {
       'updated_at': updatedAt.millisecondsSinceEpoch,
       'language': language,
       'is_favorite': isFavorite ? 1 : 0,
+      'is_pinned': isPinned ? 1 : 0,
     };
   }
 
@@ -42,6 +45,7 @@ class Note {
       updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updated_at'] as int),
       language: map['language'] as String?,
       isFavorite: (map['is_favorite'] as int?) == 1,
+      isPinned: (map['is_pinned'] as int?) == 1,
     );
   }
 
@@ -54,6 +58,7 @@ class Note {
     DateTime? updatedAt,
     String? language,
     bool? isFavorite,
+    bool? isPinned,
   }) {
     return Note(
       id: id ?? this.id,
@@ -64,6 +69,7 @@ class Note {
       updatedAt: updatedAt ?? this.updatedAt,
       language: language ?? this.language,
       isFavorite: isFavorite ?? this.isFavorite,
+      isPinned: isPinned ?? this.isPinned,
     );
   }
 

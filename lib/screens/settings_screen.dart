@@ -15,6 +15,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _selectedLanguage = 'de';
   bool _isLoading = true;
   bool _obscureApiKey = true;
+  bool _hotkeysEnabled = true;
+  bool _fillerFilterEnabled = true;
 
   final List<Map<String, String>> _languages = [
     {'code': 'de', 'name': 'Deutsch'},
@@ -34,12 +36,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadSettings() async {
     final apiKey = await _storageService.getApiKey();
     final language = await _storageService.getLanguage();
+    final hotkeysEnabled = await _storageService.getHotkeysEnabled();
+    final fillerFilterEnabled = await _storageService.getFillerFilterEnabled();
 
     setState(() {
       if (apiKey != null) {
         _apiKeyController.text = apiKey;
       }
       _selectedLanguage = language;
+      _hotkeysEnabled = hotkeysEnabled;
+      _fillerFilterEnabled = fillerFilterEnabled;
       _isLoading = false;
     });
   }
@@ -47,6 +53,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _saveSettings() async {
     await _storageService.saveApiKey(_apiKeyController.text.trim());
     await _storageService.saveLanguage(_selectedLanguage);
+    await _storageService.setHotkeysEnabled(_hotkeysEnabled);
+    await _storageService.setFillerFilterEnabled(_fillerFilterEnabled);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -168,6 +176,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(height: 32),
 
+                  // Filler Word Filtering
+                  Text(
+                    'Filler Word Filtering',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Automatically remove filler words like "vielen Dank", "äh", etc.',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 16),
+                  SwitchListTile(
+                    title: const Text('Enable Filler Filtering'),
+                    subtitle: const Text('Remove common filler words from transcriptions'),
+                    value: _fillerFilterEnabled,
+                    onChanged: (value) {
+                      setState(() {
+                        _fillerFilterEnabled = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 32),
+
                   // Keyboard Shortcuts Section (Desktop only)
                   if (Platform.isWindows ||
                       Platform.isMacOS ||
@@ -182,18 +213,57 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                     const SizedBox(height: 16),
-                    Card(
-                      child: ListTile(
-                        leading: const Icon(Icons.mic),
-                        title: const Text('Start/Stop Recording'),
-                        subtitle: Text(
-                          Platform.isMacOS
-                              ? 'Cmd+Shift+R'
-                              : 'Ctrl+Shift+R',
-                        ),
-                        trailing: const Icon(Icons.keyboard),
+                    SwitchListTile(
+                      title: const Text('Enable Global Hotkeys'),
+                      subtitle: Text(
+                        'Press ${Platform.isMacOS ? 'Cmd' : 'Ctrl'}+Shift+R to record',
                       ),
+                      value: _hotkeysEnabled,
+                      onChanged: (value) {
+                        setState(() {
+                          _hotkeysEnabled = value;
+                        });
+                      },
                     ),
+                    if (_hotkeysEnabled) ...[
+                      const SizedBox(height: 8),
+                      Card(
+                        child: ListTile(
+                          leading: const Icon(Icons.mic),
+                          title: const Text('Start/Stop Recording'),
+                          subtitle: Text(
+                            Platform.isMacOS
+                                ? 'Cmd+Shift+R'
+                                : 'Ctrl+Shift+R',
+                          ),
+                          trailing: const Icon(Icons.keyboard),
+                        ),
+                      ),
+                    ],
+                    if (!_hotkeysEnabled)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.orange),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Hotkeys are disabled. You can only record using the app button.',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     const SizedBox(height: 32),
                   ],
 

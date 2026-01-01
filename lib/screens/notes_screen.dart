@@ -85,11 +85,12 @@ class _NotesScreenState extends State<NotesScreen> {
 
       await audioFile.delete();
 
-      // Apply corrections and save note
+      // Apply corrections, filler filtering, and save note
       if (!mounted) return;
 
       final provider = context.read<AppProvider>();
       formattedText = await provider.applyCorrections(formattedText);
+      formattedText = await provider.applyFillerFilter(formattedText, language);
 
       final now = DateTime.now();
       final note = Note(
@@ -468,12 +469,26 @@ class _NoteCard extends StatelessWidget {
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
-              if (note.isFavorite) ...[
+              if (note.isPinned || note.isFavorite) ...[
                 const SizedBox(height: 8),
-                const Icon(
-                  Icons.star,
-                  size: 16,
-                  color: Colors.amber,
+                Row(
+                  children: [
+                    if (note.isPinned)
+                      const Padding(
+                        padding: EdgeInsets.only(right: 8),
+                        child: Icon(
+                          Icons.push_pin,
+                          size: 16,
+                          color: Colors.blue,
+                        ),
+                      ),
+                    if (note.isFavorite)
+                      const Icon(
+                        Icons.star,
+                        size: 16,
+                        color: Colors.amber,
+                      ),
+                  ],
                 ),
               ],
             ],

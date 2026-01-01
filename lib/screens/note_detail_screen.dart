@@ -96,6 +96,13 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
     setState(() {});
   }
 
+  Future<void> _togglePin() async {
+    await context
+        .read<AppProvider>()
+        .togglePin(widget.note.id!, !widget.note.isPinned);
+    setState(() {});
+  }
+
   void _copyToClipboard() {
     FlutterClipboard.copy(_contentController.text);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -109,6 +116,14 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Note' : 'Note'),
         actions: [
+          IconButton(
+            icon: Icon(
+              widget.note.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+              color: widget.note.isPinned ? Colors.blue : null,
+            ),
+            onPressed: _togglePin,
+            tooltip: widget.note.isPinned ? 'Unpin' : 'Pin to top',
+          ),
           IconButton(
             icon: Icon(
               widget.note.isFavorite ? Icons.star : Icons.star_border,
