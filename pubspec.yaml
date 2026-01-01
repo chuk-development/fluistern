@@ -33,7 +33,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # Audio recording
-  record: ^5.1.0
+  record: ^6.1.0
 
   # HTTP requests to Groq API
   http: ^1.2.0
