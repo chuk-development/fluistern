@@ -171,11 +171,31 @@ class _NotesScreenState extends State<NotesScreen> {
   Color _getRecordButtonColor() {
     switch (_recordingState) {
       case RecordingState.idle:
-        return Colors.blue;
+        return const Color(0xFF6366F1); // Indigo
       case RecordingState.recording:
-        return Colors.red;
+        return const Color(0xFFEF4444); // Red
       case RecordingState.processing:
-        return Colors.orange;
+        return const Color(0xFFF59E0B); // Amber
+    }
+  }
+
+  List<Color> _getRecordButtonGradient() {
+    switch (_recordingState) {
+      case RecordingState.idle:
+        return [
+          const Color(0xFF6366F1), // Indigo
+          const Color(0xFF8B5CF6), // Purple
+        ];
+      case RecordingState.recording:
+        return [
+          const Color(0xFFEF4444), // Red
+          const Color(0xFFF97316), // Orange
+        ];
+      case RecordingState.processing:
+        return [
+          const Color(0xFFF59E0B), // Amber
+          const Color(0xFFEAB308), // Yellow
+        ];
     }
   }
 
@@ -207,15 +227,20 @@ class _NotesScreenState extends State<NotesScreen> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Quick note input area
+        // Modern recording header
         Container(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.fromLTRB(32, 32, 32, 24),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            border: Border(
-              bottom: BorderSide(
-                color: Theme.of(context).dividerColor,
-              ),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Theme.of(context).colorScheme.surface,
+                Theme.of(context)
+                    .colorScheme
+                    .surfaceContainerHighest
+                    .withValues(alpha: 0.5),
+              ],
             ),
           ),
           child: Column(
@@ -224,13 +249,30 @@ class _NotesScreenState extends State<NotesScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      'What\'s on your mind today?',
-                      style: Theme.of(context).textTheme.headlineSmall,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Voice Dictation',
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Click to start recording or press Ctrl+Shift+R',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withValues(alpha: 0.6),
+                              ),
+                        ),
+                      ],
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.refresh),
+                    icon: const Icon(Icons.refresh_rounded),
                     onPressed: () {
                       context.read<AppProvider>().loadNotes();
                     },
@@ -238,53 +280,75 @@ class _NotesScreenState extends State<NotesScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
+
+              // Modern record button
               Row(
                 children: [
-                  Tooltip(
-                    message: _getRecordButtonTooltip(),
-                    child: Material(
-                      color: _getRecordButtonColor(),
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        onTap: _recordingState != RecordingState.processing
-                            ? _toggleRecording
-                            : null,
-                        customBorder: const CircleBorder(),
-                        child: SizedBox(
-                          width: 56,
-                          height: 56,
-                          child: Icon(
-                            _getRecordButtonIcon(),
-                            color: Colors.white,
-                            size: 28,
-                          ),
+                  GestureDetector(
+                    onTap: _recordingState != RecordingState.processing
+                        ? _toggleRecording
+                        : null,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: _getRecordButtonGradient(),
                         ),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _getRecordButtonColor().withValues(alpha: 0.4),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        _getRecordButtonIcon(),
+                        color: Colors.white,
+                        size: 32,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 20),
                   Expanded(
                     child: _quickNoteText != null
                         ? Container(
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.green.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.green),
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF10B981).withValues(alpha: 0.1),
+                                  const Color(0xFF059669).withValues(alpha: 0.05),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                                width: 1.5,
+                              ),
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.check_circle,
-                                    color: Colors.green, size: 20),
-                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF10B981),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(Icons.check_rounded,
+                                      color: Colors.white, size: 16),
+                                ),
+                                const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
                                     _quickNoteText!.length > 100
                                         ? '${_quickNoteText!.substring(0, 100)}...'
                                         : _quickNoteText!,
-                                    style:
-                                        Theme.of(context).textTheme.bodyMedium,
+                                    style: Theme.of(context).textTheme.bodyMedium,
                                   ),
                                 ),
                               ],
@@ -292,37 +356,70 @@ class _NotesScreenState extends State<NotesScreen> {
                           )
                         : _error != null
                             ? Container(
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.all(16),
                                 decoration: BoxDecoration(
-                                  color: Colors.red.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: Colors.red),
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      const Color(0xFFEF4444).withValues(alpha: 0.1),
+                                      const Color(0xFFDC2626).withValues(alpha: 0.05),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: const Color(0xFFEF4444).withValues(alpha: 0.3),
+                                    width: 1.5,
+                                  ),
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.error_outline,
-                                        color: Colors.red, size: 20),
-                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEF4444),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(Icons.error_outline_rounded,
+                                          color: Colors.white, size: 16),
+                                    ),
+                                    const SizedBox(width: 12),
                                     Expanded(
                                       child: Text(
                                         _error!,
-                                        style: const TextStyle(color: Colors.red),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              color: const Color(0xFFDC2626),
+                                            ),
                                       ),
                                     ),
                                   ],
                                 ),
                               )
-                            : Text(
-                                'Take a quick note with your voice',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface
-                                          .withValues(alpha: 0.5),
-                                    ),
+                            : Row(
+                                children: [
+                                  Icon(
+                                    Icons.mic_none_rounded,
+                                    size: 20,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.4),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'Ready to capture your voice',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withValues(alpha: 0.5),
+                                        ),
+                                  ),
+                                ],
                               ),
                   ),
                 ],
@@ -333,7 +430,7 @@ class _NotesScreenState extends State<NotesScreen> {
 
         // Search bar
         Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(32, 24, 32, 16),
           child: Row(
             children: [
               Expanded(
@@ -416,7 +513,7 @@ class _NotesScreenState extends State<NotesScreen> {
               }
 
               return ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
                 itemCount: provider.notes.length,
                 itemBuilder: (context, index) {
                   final note = provider.notes[index];
@@ -474,67 +571,95 @@ class _NoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      note.displayTitle,
-                      style: Theme.of(context).textTheme.titleMedium,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  Text(
-                    _formatDate(note.createdAt),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.6),
-                        ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                note.preview,
-                style: Theme.of(context).textTheme.bodyMedium,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-              ),
-              if (note.isPinned || note.isFavorite) ...[
-                const SizedBox(height: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: note.isPinned
+              ? colorScheme.primary.withValues(alpha: 0.3)
+              : colorScheme.outlineVariant.withValues(alpha: 0.2),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Row(
                   children: [
-                    if (note.isPinned)
-                      const Padding(
-                        padding: EdgeInsets.only(right: 8),
+                    if (note.isPinned || note.isFavorite) ...[
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: note.isPinned
+                              ? colorScheme.primary.withValues(alpha: 0.1)
+                              : const Color(0xFFFBBF24).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                         child: Icon(
-                          Icons.push_pin,
-                          size: 16,
-                          color: Colors.blue,
+                          note.isPinned ? Icons.push_pin_rounded : Icons.star_rounded,
+                          size: 14,
+                          color: note.isPinned ? colorScheme.primary : const Color(0xFFFBBF24),
                         ),
                       ),
-                    if (note.isFavorite)
-                      const Icon(
-                        Icons.star,
-                        size: 16,
-                        color: Colors.amber,
+                      const SizedBox(width: 8),
+                    ],
+                    Expanded(
+                      child: Text(
+                        note.displayTitle,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        _formatDate(note.createdAt),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurface.withValues(alpha: 0.6),
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                    ),
                   ],
                 ),
+                const SizedBox(height: 12),
+                Text(
+                  note.preview,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurface.withValues(alpha: 0.8),
+                        height: 1.5,
+                      ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
-            ],
+            ),
           ),
         ),
       ),
