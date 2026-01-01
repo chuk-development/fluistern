@@ -69,11 +69,7 @@ jobs:
       - name: Commit version bump
         run: |
           git add pubspec.yaml
-          git commit -m "Bump version to ${{ steps.version.outputs.new_version }}
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+          git commit -m "Bump version to ${{ steps.version.outputs.new_version }}"
           git push origin main
 
       - name: Create and push tag
