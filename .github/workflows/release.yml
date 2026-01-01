@@ -31,15 +31,28 @@ jobs:
             Cross-platform voice dictation app with AI-powered formatting, command mode, and auto-paste.
 
             ### Downloads
-            - **Windows**: fluistern-windows-${{ steps.get_version.outputs.version }}.zip
-            - **macOS**: fluistern-macos-${{ steps.get_version.outputs.version }}.zip
-            - **Linux**: fluistern-linux-${{ steps.get_version.outputs.version }}.tar.gz
+
+            **Windows**
+            - 🎯 **Recommended**: [fluistern-windows-${{ steps.get_version.outputs.version }}-installer.exe](../../releases/download/${{ steps.get_version.outputs.version }}/fluistern-windows-${{ steps.get_version.outputs.version }}-installer.exe) - Single-click installer
+            - 📦 [fluistern-windows-${{ steps.get_version.outputs.version }}.zip](../../releases/download/${{ steps.get_version.outputs.version }}/fluistern-windows-${{ steps.get_version.outputs.version }}.zip) - Portable ZIP
+
+            **macOS**
+            - 🎯 **Recommended**: [fluistern-macos-${{ steps.get_version.outputs.version }}.dmg](../../releases/download/${{ steps.get_version.outputs.version }}/fluistern-macos-${{ steps.get_version.outputs.version }}.dmg) - Drag & drop installer
+
+            **Linux**
+            - 🎯 **Recommended**: [fluistern-linux-${{ steps.get_version.outputs.version }}.AppImage](../../releases/download/${{ steps.get_version.outputs.version }}/fluistern-linux-${{ steps.get_version.outputs.version }}.AppImage) - Universal AppImage
+            - 📦 [fluistern-linux-${{ steps.get_version.outputs.version }}.tar.gz](../../releases/download/${{ steps.get_version.outputs.version }}/fluistern-linux-${{ steps.get_version.outputs.version }}.tar.gz) - Manual extraction
 
             ### Installation
-            1. Download the appropriate file for your platform
-            2. Extract the archive
-            3. Run the executable
-            4. Enter your Groq API key in Settings
+
+            **Windows**: Download the installer and run it. That's it!
+
+            **macOS**: Download the DMG, open it, and drag Flüstern to Applications.
+
+            **Linux**: Download the AppImage, make it executable (`chmod +x fluistern-*.AppImage`), and run it.
+
+            ### First Launch
+            Enter your Groq API key in Settings (get one free at [console.groq.com](https://console.groq.com))
 
             ### What's New
             See the full changelog in the commits since the last release.
@@ -69,12 +82,21 @@ jobs:
       - name: Build Windows
         run: flutter build windows --release
 
-      - name: Create archive
+      - name: Create ZIP archive
         run: |
           cd build/windows/x64/runner/Release
           Compress-Archive -Path * -DestinationPath ../../../../../fluistern-windows-${{ needs.create-release.outputs.version }}.zip
 
-      - name: Upload Windows Release Asset
+      - name: Install Inno Setup
+        run: |
+          choco install innosetup -y
+
+      - name: Build Windows Installer
+        run: |
+          $env:APP_VERSION="${{ needs.create-release.outputs.version }}"
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" windows\installer.iss
+
+      - name: Upload Windows ZIP
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -83,6 +105,16 @@ jobs:
           asset_path: ./fluistern-windows-${{ needs.create-release.outputs.version }}.zip
           asset_name: fluistern-windows-${{ needs.create-release.outputs.version }}.zip
           asset_content_type: application/zip
+
+      - name: Upload Windows Installer
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./installer_output/fluistern-windows-${{ needs.create-release.outputs.version }}-installer.exe
+          asset_name: fluistern-windows-${{ needs.create-release.outputs.version }}-installer.exe
+          asset_content_type: application/vnd.microsoft.portable-executable
 
   build-macos:
     name: Build macOS
@@ -104,20 +136,37 @@ jobs:
       - name: Build macOS
         run: flutter build macos --release
 
-      - name: Create archive
-        run: |
-          cd build/macos/Build/Products/Release
-          zip -r ../../../../../fluistern-macos-${{ needs.create-release.outputs.version }}.zip fluistern_app.app
+      - name: Install create-dmg
+        run: brew install create-dmg
 
-      - name: Upload macOS Release Asset
+      - name: Create DMG
+        run: |
+          create-dmg \
+            --volname "Flüstern" \
+            --volicon "build/macos/Build/Products/Release/fluistern_app.app/Contents/Resources/AppIcon.icns" \
+            --window-pos 200 120 \
+            --window-size 800 400 \
+            --icon-size 100 \
+            --icon "fluistern_app.app" 200 190 \
+            --hide-extension "fluistern_app.app" \
+            --app-drop-link 600 185 \
+            "fluistern-macos-${{ needs.create-release.outputs.version }}.dmg" \
+            "build/macos/Build/Products/Release/fluistern_app.app" || true
+
+          # Fallback if create-dmg fails
+          if [ ! -f "fluistern-macos-${{ needs.create-release.outputs.version }}.dmg" ]; then
+            hdiutil create -volname "Flüstern" -srcfolder build/macos/Build/Products/Release/fluistern_app.app -ov -format UDZO "fluistern-macos-${{ needs.create-release.outputs.version }}.dmg"
+          fi
+
+      - name: Upload macOS DMG
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: ./fluistern-macos-${{ needs.create-release.outputs.version }}.zip
-          asset_name: fluistern-macos-${{ needs.create-release.outputs.version }}.zip
-          asset_content_type: application/zip
+          asset_path: ./fluistern-macos-${{ needs.create-release.outputs.version }}.dmg
+          asset_name: fluistern-macos-${{ needs.create-release.outputs.version }}.dmg
+          asset_content_type: application/x-apple-diskimage
 
   build-linux:
     name: Build Linux
@@ -144,12 +193,21 @@ jobs:
       - name: Build Linux
         run: flutter build linux --release
 
-      - name: Create archive
+      - name: Create tar.gz archive
         run: |
           cd build/linux/x64/release/bundle
           tar -czf ../../../../../fluistern-linux-${{ needs.create-release.outputs.version }}.tar.gz *
 
-      - name: Upload Linux Release Asset
+      - name: Install AppImage dependencies
+        run: |
+          sudo apt-get install -y libfuse2
+
+      - name: Build AppImage
+        run: |
+          chmod +x linux/build-appimage.sh
+          ./linux/build-appimage.sh ${{ needs.create-release.outputs.version }}
+
+      - name: Upload Linux tar.gz
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -158,3 +216,13 @@ jobs:
           asset_path: ./fluistern-linux-${{ needs.create-release.outputs.version }}.tar.gz
           asset_name: fluistern-linux-${{ needs.create-release.outputs.version }}.tar.gz
           asset_content_type: application/gzip
+
+      - name: Upload Linux AppImage
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: ./fluistern-linux-${{ needs.create-release.outputs.version }}.AppImage
+          asset_name: fluistern-linux-${{ needs.create-release.outputs.version }}.AppImage
+          asset_content_type: application/x-executable
