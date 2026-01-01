@@ -6,12 +6,17 @@ A modern, lightweight voice-to-text app built with Flutter that works on Windows
 
 ## Features
 
-- **🎤 Voice Dictation** - Record and transcribe speech to text
+- **🎤 Voice Dictation** - Record and transcribe speech to text with a single click or hotkey
+- **⌨️ Global Keyboard Shortcuts** - Start/stop recording from anywhere with Ctrl+Shift+R (Windows/Linux) or Cmd+Shift+R (macOS)
+- **📝 Notes History** - All transcriptions are automatically saved with full editing capabilities
+- **🔍 Search & Filter** - Quickly find notes with powerful search
+- **✏️ Rich Note Editor** - Edit, favorite, and organize your notes
+- **📖 Custom Dictionary** - Add corrections to auto-fix common transcription mistakes
 - **🤖 Smart Formatting** - Automatic punctuation, capitalization, and paragraph breaks
 - **🗣️ Voice Commands** - "Absatz" for paragraphs, "in Anführungszeichen" for quotes, etc.
-- **🌍 Multi-Language** - Supports German, English, Spanish, French, and more
+- **🌍 Multi-Language** - Supports German, English, Spanish, French, Italian, and Portuguese
 - **📋 Auto-Copy** - Automatically copies formatted text to clipboard
-- **🎨 Modern UI** - Clean, simple Material Design 3 interface
+- **🎨 Modern UI** - WhisperFlow-inspired interface with sidebar navigation
 - **🌓 Dark Mode** - Automatic dark/light theme support
 - **📱 Cross-Platform** - Works on Windows, macOS, Linux, and Android
 
@@ -21,6 +26,21 @@ A modern, lightweight voice-to-text app built with Flutter that works on Windows
 
 - Flutter SDK 3.38.0 or higher
 - Groq API key (get one free at [console.groq.com](https://console.groq.com))
+
+#### Linux System Dependencies
+
+On Linux, install keybinder for global keyboard shortcuts:
+
+```bash
+# Arch Linux
+sudo pacman -S keybinder3
+
+# Ubuntu/Debian
+sudo apt-get install libkeybinder-3.0-dev
+
+# Fedora
+sudo dnf install keybinder3-devel
+```
 
 ### Quick Start
 
