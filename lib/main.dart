@@ -57,13 +57,12 @@ class FluisternApp extends StatelessWidget {
       secondary: const Color(0xFF8B5CF6), // Purple
       tertiary: const Color(0xFF06B6D4), // Cyan
       surface: const Color(0xFFFAFAFA),
-      background: const Color(0xFFF5F5F5),
     );
 
     return ThemeData(
       colorScheme: colorScheme,
       useMaterial3: true,
-      scaffoldBackgroundColor: colorScheme.background,
+      scaffoldBackgroundColor: const Color(0xFFF5F5F5),
 
       // Typography
       textTheme: const TextTheme(
@@ -178,13 +177,12 @@ class FluisternApp extends StatelessWidget {
       secondary: const Color(0xFFA78BFA),
       tertiary: const Color(0xFF22D3EE),
       surface: const Color(0xFF1E1E1E),
-      background: const Color(0xFF121212),
     );
 
     return ThemeData(
       colorScheme: colorScheme,
       useMaterial3: true,
-      scaffoldBackgroundColor: colorScheme.background,
+      scaffoldBackgroundColor: const Color(0xFF121212),
 
       // Typography (same as light)
       textTheme: const TextTheme(

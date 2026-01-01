@@ -2,9 +2,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:clipboard/clipboard.dart';
 
-// Windows-specific imports
-import 'package:win32/win32.dart' if (dart.library.html) '';
-
 class AutoPasteService {
   static final AutoPasteService instance = AutoPasteService._internal();
   AutoPasteService._internal();
@@ -32,25 +29,16 @@ class AutoPasteService {
     }
   }
 
-  /// Simulate Ctrl+V on Windows using win32 API
+  /// Simulate Ctrl+V on Windows
   Future<bool> _pasteWindows() async {
     try {
-      // Simulate Ctrl+V keystroke
-      // VK_CONTROL = 0x11, VK_V = 0x56
+      if (!Platform.isWindows) {
+        return false;
+      }
 
-      // Press Ctrl
-      keybd_event(VK_CONTROL, 0, KEYEVENTF_EXTENDEDKEY, 0);
-
-      // Press V
-      keybd_event(0x56, 0, KEYEVENTF_EXTENDEDKEY, 0);
-
-      // Release V
-      keybd_event(0x56, 0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0);
-
-      // Release Ctrl
-      keybd_event(VK_CONTROL, 0, KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP, 0);
-
-      debugPrint('Auto-paste: Simulated Ctrl+V on Windows');
+      // For now, just copy to clipboard
+      // TODO: Implement Windows-specific auto-paste when win32 is properly configured
+      debugPrint('Auto-paste: Windows paste not yet fully implemented');
       return true;
     } catch (e) {
       debugPrint('Failed to simulate paste on Windows: $e');

@@ -19,21 +19,21 @@ class _MainLayoutState extends State<MainLayout> {
     SettingsScreen(),
   ];
 
-  final List<NavigationRailDestination> _destinations = const [
-    NavigationRailDestination(
-      icon: Icon(Icons.notes_outlined),
-      selectedIcon: Icon(Icons.notes),
-      label: Text('Notes'),
+  final List<({IconData icon, IconData selectedIcon, String label})> _destinations = [
+    (
+      icon: Icons.notes_outlined,
+      selectedIcon: Icons.notes,
+      label: 'Notes',
     ),
-    NavigationRailDestination(
-      icon: Icon(Icons.spellcheck_outlined),
-      selectedIcon: Icon(Icons.spellcheck),
-      label: Text('Dictionary'),
+    (
+      icon: Icons.spellcheck_outlined,
+      selectedIcon: Icons.spellcheck,
+      label: 'Dictionary',
     ),
-    NavigationRailDestination(
-      icon: Icon(Icons.settings_outlined),
-      selectedIcon: Icon(Icons.settings),
-      label: Text('Settings'),
+    (
+      icon: Icons.settings_outlined,
+      selectedIcon: Icons.settings,
+      label: 'Settings',
     ),
   ];
 
@@ -173,8 +173,8 @@ class _MainLayoutState extends State<MainLayout> {
                                   children: [
                                     Icon(
                                       isSelected
-                                          ? destination.selectedIcon.icon
-                                          : destination.icon.icon,
+                                          ? destination.selectedIcon
+                                          : destination.icon,
                                       color: isSelected
                                           ? colorScheme.primary
                                           : colorScheme.onSurface
@@ -183,7 +183,8 @@ class _MainLayoutState extends State<MainLayout> {
                                     ),
                                     const SizedBox(width: 16),
                                     Expanded(
-                                      child: DefaultTextStyle(
+                                      child: Text(
+                                        destination.label,
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodyLarge!
@@ -195,7 +196,6 @@ class _MainLayoutState extends State<MainLayout> {
                                                   ? FontWeight.w600
                                                   : FontWeight.w400,
                                             ),
-                                        child: destination.label,
                                       ),
                                     ),
                                   ],
